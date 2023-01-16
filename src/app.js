@@ -1,4 +1,4 @@
-import express, { request } from "express"
+import express, { request, response } from "express"
 import cors from "cors"
 import { MongoClient, ObjectId } from "mongodb"
 import dotenv from "dotenv"
@@ -61,6 +61,7 @@ app.post("/participants", async(request, response) => {
 
 
 app.get("/participants", async(request, response) => {
+
     try {
         const usuarios = await db.collection("participants").find().toArray()
         return response.send(usuarios)
@@ -69,7 +70,38 @@ app.get("/participants", async(request, response) => {
     }
 })
    
+app.post("/messages", async(request, response) => {
+    const data = request.body
+    const origemUsuario = request.headers.user
 
+    const usuarioSchema = joi.object({
+        to: joi.string().required(),
+        text: joi.string().required(),
+        type: joi.string().valid("message","private_message").required()
+    })
+
+    const validation = usuarioSchema.validate(data)
+    if(validation.error){
+        return response.sendStatus(422)
+    }
+
+    try {
+        const validarUsuario = await db.collection("participants").findOne({name: origemUsuario})
+        if(!validarUsuario){
+            return response.sendStatus(422)
+        }
+    } catch (error) {
+        response.sendStatus(500)
+    }
+
+    try {
+        await db.collection("messages").insertOne({from: origemUsuario, to: data.to, text: data.text, type: data.type, time: dayjs(Date.now()).format("HH:mm:ss")})
+        response.sendStatus(201)
+    } catch (error) {
+        response.sendStatus(500)
+    }
+
+})  
 
 
 
