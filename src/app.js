@@ -112,8 +112,11 @@ app.get("/messages", async(request, response) => {
     if(query.limit){
         const limite = Number(query.limit)
          if(isNaN(limite) || limite < 1){
+            return response.sendStatus(422)
+         } else {
             return response.send([...mensagens].slice(-limite).reverse())
          }
+         
     }
     return response.send([...mensagens].reverse())
   } catch (error) {
