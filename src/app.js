@@ -52,6 +52,7 @@ app.post("/participants", async(request, response) => {
     try {
         await db.collection("participants").insertOne({name: nomeUsuario, lastStatus: Date.now() })
         await db.collection("messages").insertOne({from: nomeUsuario, to:"Todos", text:"entra na sala...", type:"status", time: dayjs(Date.now()).format("HH:mm:ss")})
+        return response.sendStatus(201)
     } catch (error) {
         response.sendStatus(500)
     }
