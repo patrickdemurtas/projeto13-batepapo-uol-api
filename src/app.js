@@ -103,6 +103,24 @@ app.post("/messages", async(request, response) => {
 
 })  
 
+app.get("/messages", async(request, response) => {
+    const { user } = request.headers
+    const { query } = request
+   
+  try {
+    const mensagens = await db.collection("messages").find({$or: [{from: user}, {to: user}, {to: "Todos"}]}).toArray()
+    if(query.limit){
+        const limite = Number(query.limit)
+         if(isNaN(limite) || limite < 1){
+            return response.send([...mensagens].slice(-limite).reverse())
+         }
+    }
+    return response.send([...mensagens].reverse())
+  } catch (error) {
+    return response.sendStatus(500)
+  }
+})
+
 
 
 
