@@ -141,7 +141,25 @@ app.post("/status", async (request, response) => {
     }
 })
 
+app.delete("/messages/:id", async (request, response) => {
+    const { id } = request.params
+    const nome = request.headers.user
+    
+    const usuario = await db.collection("participants").find({name: nome}).next()
+    const mensagemX = await db.collection("messages").find({_id: ObjectId(id)}).next()
+    if(!mensagemX){
+        return response.sendStatus(404)
+    } else if(usuario.name !== mensagemX.from){
+        return response.sendStatus(401)
+    } 
 
+    await db.collection("messages").deleteOne({_id: mensagemX._id})
+
+    return response.sendStatus(200)
+
+
+   
+})
 
 
 app.listen(PORT, () => console.log(`servidor rodando na porta: ${PORT}`))
