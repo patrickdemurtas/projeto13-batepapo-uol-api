@@ -162,5 +162,19 @@ app.delete("/messages/:id", async (request, response) => {
 })
 
 
+setInterval(async() => {
+    try {
+        const usuarios = await db.collection("participants").find().toArray()
+        usuarios.forEach(async(u) => {
+            if((Date.now() - 10000) > u.lastStatus){
+                await db.collection("participants").deleteOne({_id: ObjectId(u._id)})
+                await db.collection("messages").insertOne({from: u.name, to: "Todos", text: "sai da sala...", type: "status", time: dayjs(Date.now()).format("HH:mm:ss")})
+            }
+        })
+    } catch (error) {
+        return response.sendStatus(500)
+    }
+}, 15000)
+
 app.listen(PORT, () => console.log(`servidor rodando na porta: ${PORT}`))
 
